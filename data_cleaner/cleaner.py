@@ -30,9 +30,15 @@ def main():
         en_text = ' '.join(en['text'] for en in en_texts)
         fa_text = ' '.join(fa['text'] for fa in fa_texts)
         print(f'{en_end} out of {max_len}\nENGLISH: {en_text}\nFARSI: {fa_text}')
-        inp = input("'b' next line\n's' to save\n'm' merge with previous\n>> ")
+        inp = input("'es' skip\n'b' next line\n's' to save\n'm' merge with previous\n>> ")
 
-        if inp == 'm' and len(lst) > 0:
+        if inp == 'es':
+            en_start = en_end
+            fa_start = fa_end
+            en_end = en_start + 1
+            fa_end = fa_start + 1
+            prev_op = 'es'
+        elif inp == 'm' and len(lst) > 0:
             lst[-1]['en'] += f' {en_text}'
             lst[-1]['fa'] += f' {fa_text}'
             res_en = lst[-1]['en']
