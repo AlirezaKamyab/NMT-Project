@@ -27,10 +27,23 @@ def main():
     while True:
         en_texts = en_subtitles[en_start:en_end]
         fa_texts = fa_subtitles[fa_start:fa_end]
-        en_text = ' '.join(en['text'] for en in en_texts)
-        fa_text = ' '.join(fa['text'] for fa in fa_texts)
-        print(f'{en_end} out of {max_len}\nENGLISH: {en_text}\nFARSI: {fa_text}')
-        inp = input("'es' skip\n'b' next line\n's' to save\n'm' merge with previous\n>> ")
+        en_texts = [en['text'] for en in en_texts]
+        fa_texts = [fa['text'] for fa in fa_texts]
+        en_text = ' '.join(en_texts)
+        fa_text = ' '.join(fa_texts)
+        print(f'en:{en_end} fa:{fa_end} out of {max_len}\nENGLISH: {en_text}\nFARSI: {fa_text}')
+
+        str_inp = "'es' skip\n'n' next both\n's' to save\n'm' merge with previous"
+        if fa_end <= len(fa_subtitles):
+            str_inp += "\n'f' next farsi"
+        if en_end <= len(en_subtitles):
+            str_inp += "\n'e' next english"
+        if len(en_texts) > 0:
+            str_inp += "\n're' pop english"
+        if len(fa_texts) > 0:
+            str_inp += "\n'rf' pop farsi"
+        str_inp += '\n>> '
+        inp = input(str_inp)
 
         if inp == 'es':
             en_start = en_end
@@ -50,10 +63,10 @@ def main():
             en_end = en_start + 1
             fa_end = fa_start + 1
             prev_op = 'm'
-        elif inp == 'b':
+        elif inp == 'n':
             en_end += 1
             fa_end += 1
-            prev_op = 'b'
+            prev_op = 'n'
         elif inp == 's':
             lst.append({'en': en_text, 'fa': fa_text})
             en_start = en_end
@@ -61,9 +74,25 @@ def main():
             en_end = en_start + 1
             fa_end = fa_start + 1
             prev_op = 's'
+        elif inp == 'f' and fa_end <= len(fa_subtitles):
+            fa_end += 1
+            prev_op = 'n'
+        elif inp == 'e' and en_end <= len(en_subtitles):
+            en_end += 1
+            prev_op = 'n'
+        elif inp == 're' and len(en_texts) > 0:
+            en_popped = en_texts.pop()
+            print(f'Item popped: {en_popped}\n\n')
+            en_end -= 1
+            prev_op = 're'
+        elif inp == 'rf' and len(fa_texts) > 0:
+            fa_popped = fa_texts.pop()
+            print(f'Item popped: {fa_popped}\n\n')
+            fa_end -= 1
+            prev_op = 'rf'
 
-        if en_end > len(en_subtitles) or fa_end > len(fa_subtitles):
-            if prev_op == 'b':
+        if en_end > len(en_subtitles) and fa_end > len(fa_subtitles):
+            if prev_op == 'n':
                 lst.append({'en': en_text, 'fa': fa_text})
             break
 
@@ -76,7 +105,7 @@ def main():
 
 
 def get_subtitles(filename: str) -> list:
-    with open(filename, 'r') as file:
+    with open(filename, 'r', encoding='utf8') as file:
         file = file.read()
 
     pattern = r'(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})((\n.+)*)'
