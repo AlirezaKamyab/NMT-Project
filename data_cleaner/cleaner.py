@@ -24,6 +24,7 @@ def main():
 
     lst = []
     prev_op = 'n'
+    options = True
     while True:
         en_texts = en_subtitles[en_start:en_end]
         fa_texts = fa_subtitles[fa_start:fa_end]
@@ -33,19 +34,27 @@ def main():
         fa_text = ' '.join(fa_texts)
         print(f'en:{en_end} fa:{fa_end} out of {max_len}\nENGLISH: {en_text}\nFARSI: {fa_text}')
 
-        str_inp = "'es' skip\n'n' next both\n's' to save\n'm' merge with previous"
-        if fa_end <= len(fa_subtitles):
-            str_inp += "\n'f' next farsi"
-        if en_end <= len(en_subtitles):
-            str_inp += "\n'e' next english"
-        if len(en_texts) > 0:
-            str_inp += "\n're' pop english"
-        if len(fa_texts) > 0:
-            str_inp += "\n'rf' pop farsi"
+        if options:
+            str_inp = "'es' skip\n'n' next both\n's' to save\n'm' merge with previous"
+            if fa_end <= len(fa_subtitles):
+                str_inp += "\n'f' next farsi"
+            if en_end <= len(en_subtitles):
+                str_inp += "\n'e' next english"
+            if len(en_texts) > 0:
+                str_inp += "\n're' pop english"
+            if len(fa_texts) > 0:
+                str_inp += "\n'rf' pop farsi"
+            if options:
+                str_inp += "\n'hide' to hide the options menu"
+            else:
+                str_inp += "\n'show' to show the options menu"
 
-        str_inp += "\n'END' Save all and write to file"
-        str_inp += '\n>> '
-        inp = input(str_inp)
+            if len(lst) > 0:
+                str_inp += "\n'R' remove previously added item"
+            str_inp += "\n'END' Save all and write to file"
+            str_inp += '\n>> '
+            inp = input(str_inp)
+        else: inp = input('\n>>')
 
         if inp == 'es':
             en_start = en_end
@@ -92,6 +101,16 @@ def main():
             print(f'Item popped: {fa_popped}\n\n')
             fa_end -= 1
             prev_op = 'rf'
+        elif inp == 'R' and len(lst) > 0:
+            item = lst.pop()
+            en_popped = item['en']
+            fa_popped = item['fa']
+            print(f'Item Removed: {en_popped} : {fa_popped}\n\n')
+            prev_op = 'R'
+        elif inp == 'hide':
+            options = False
+        elif inp == 'show':
+            options = True
         elif inp == 'END':
             break
 
