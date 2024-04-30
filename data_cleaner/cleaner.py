@@ -42,6 +42,8 @@ def main():
             str_inp += "\n're' pop english"
         if len(fa_texts) > 0:
             str_inp += "\n'rf' pop farsi"
+
+        str_inp += "\n'END' Save all and write to file"
         str_inp += '\n>> '
         inp = input(str_inp)
 
@@ -90,6 +92,8 @@ def main():
             print(f'Item popped: {fa_popped}\n\n')
             fa_end -= 1
             prev_op = 'rf'
+        elif inp == 'END':
+            break
 
         if en_end > len(en_subtitles) and fa_end > len(fa_subtitles):
             if prev_op == 'n':
