@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import sys
 from parsivar import Normalizer
 import nltk
@@ -41,6 +42,10 @@ def main():
 
     i = 0
     while i < len(texts):
+        if texts[i].strip() == '':
+            i += 1
+            continue
+
         text = texts[i].split(sep)
         en = ' '.join(tokenizer.tokenize(text[0]))
         fa = normalizer.normalize(text[1]).replace('\u200c', ' ')
@@ -54,7 +59,6 @@ def main():
             print('Invalid input, skipping . . .')
             continue
         if translator is not None:
-            google = None
             while True:
                 try:
                     google = translator.translate(text[0])
@@ -114,6 +118,8 @@ def save(new_filename, rest_filename, taken, texts, i):
         if rest_filename.strip() == '': return
         with open(rest_filename, 'w') as file:
             file.write('\n'.join(texts[i:]))
+    elif i >= len(texts):
+        os.remove(rest_filename)
 
 
 if __name__ == '__main__':
