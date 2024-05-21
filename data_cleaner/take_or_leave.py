@@ -3,7 +3,8 @@ import os
 import time
 
 from deep_translator import GoogleTranslator
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError
+import threading
 
 BATCH_SIZE = 20
 MAX_THREADS = 5
@@ -66,13 +67,12 @@ def main():
 
 
 def translate_batch(batch, translator, batch_id=0):
-    while True:
-        try:
-            google = translator.translate_batch(batch)
-            return batch, google, batch_id
-        except:
-            print('Establishing connection . . .')
-            time.sleep(1)
+    try:
+        google = translator.translate_batch(batch, timeout=BATCH_SIZE * 5)
+        return batch, google, batch_id
+    except:
+        print('\nEstablishing connection . . .')
+        return batch, None, batch_id
 
 
 def batch_executor(batches, translator):
@@ -84,10 +84,15 @@ def batch_executor(batches, translator):
                    for i in range(len(batches))]
 
         for future in as_completed(futures):
-            try:
-                yield future.result()
-            except:
-                pass
+            result = future.result()
+            if result[1] is None:
+                futures.append(executor.submit(translate_batch,
+                                               batch=result[0],
+                                               translator=translator,
+                                               batch_id=result[2]))
+                print(f'Batch id {result[2]} has been postponed')
+            else:
+                yield result
 
 
 def save(new_filename, rest_filename, taken, total_batches, batches_done):
@@ -106,6 +111,11 @@ def save(new_filename, rest_filename, taken, total_batches, batches_done):
                     file.write(data + '\n')
     else:
         os.remove(rest_filename)
+
+
+def thread_sleep(seconds):
+    event = threading.Event()
+    event.wait(timeout=seconds)
 
 
 if __name__ == '__main__':
