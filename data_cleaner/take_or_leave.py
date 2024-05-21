@@ -109,8 +109,6 @@ def save(new_filename, rest_filename, taken, total_batches, batches_done):
                 if batch_id in batches_done: continue
                 for data in total_batches[batch_id]:
                     file.write(data + '\n')
-    else:
-        os.remove(rest_filename)
 
 
 def thread_sleep(seconds):
