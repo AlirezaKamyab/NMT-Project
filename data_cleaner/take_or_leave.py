@@ -106,7 +106,7 @@ def save(new_filename, rest_filename, taken, total_batches, batches_done):
             return
         with open(rest_filename, 'w') as file:
             for batch_id in range(len(total_batches)):
-                if batch_id in batches_done: continue
+                if batch_id not in batches_done: continue
                 for data in total_batches[batch_id]:
                     file.write(data + '\n')
 
