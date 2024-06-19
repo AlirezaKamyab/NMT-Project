@@ -6,4 +6,5 @@
 /data_cleaner/*.txt
 /data_cleaner/clean
 !/data_cleaner/clean/*.ipynb
-/checkpoints
+/Checkpoints
+/.ipynb_checkpoints
