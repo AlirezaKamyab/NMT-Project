@@ -11,7 +11,7 @@ import re
 from transformers import BertTokenizer, AutoTokenizer
 from sklearn.model_selection import train_test_split
 import time
-from Transformers import Transformer
+from Utils.Transformers import Transformer
 from keras.losses import SparseCategoricalCrossentropy
 from keras.optimizers import Adam
 from keras.metrics import Metric
@@ -54,7 +54,7 @@ def sort_dataset(source, target):
 ### Loading the dataset
 
 
-NUM_SAMPLES = 10000
+NUM_SAMPLES = 1_000_000
 FILE_PATH = './Data/combined.txt'
 src_lang, targ_lang = create_dataset(FILE_PATH, NUM_SAMPLES)
 
@@ -70,52 +70,38 @@ print('Source Validation examples:', len(src_val))
 
 
 def en_vectorization(text):
-    return en_tokenizer(text, max_length=50, truncation=True, padding='max_length')['input_ids']
+    text = [x.decode('utf-8') for x in text.numpy()]
+    return en_tokenizer(text, padding=True, return_tensors='tf')['input_ids']
 
 def fa_vectorization(text):
-    return fa_tokenizer(text, max_length=50, truncation=True, padding='max_length')['input_ids']
-
-start = time.time()
-tokenized_src_train = [en_vectorization(x) for x in src_train]
-print(f'src train done in {time.time() - start:>4.4f}')
-tokenized_targ_train = [fa_vectorization(x) for x in targ_train]
-print(f'targ train done in {time.time() - start:>4.4f}')
-
-tokenized_src_val = [en_vectorization(x) for x in src_val]
-print(f'src validation done in {time.time() - start:>4.4f}')
-tokenized_targ_val = [fa_vectorization(x) for x in targ_val]
-print(f'targ validation done in {time.time() - start:>4.4f}')
+    text = [x.decode('utf-8') for x in text.numpy()]
+    return fa_tokenizer(text, padding=True, return_tensors='tf')['input_ids']
 
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 BATCH_SIZE = 128
 STEPS_PER_EPOCH = len(src_train) // BATCH_SIZE
-BUFFER_SIZE = 5000
+BUFFER_SIZE = 1000
 
 def preprocess(src, targ):
+    src = tf.py_function(func=en_vectorization, inp=[src], Tout=tf.TensorSpec(shape=(None, None), dtype=tf.int32))
     src = tf.cast(src, tf.int32)
-    src = tf.reshape(src, shape=(-1,))
+    targ = tf.py_function(func=fa_vectorization, inp=[targ], Tout=tf.TensorSpec(shape=(None, None), dtype=tf.int32))
     targ = tf.cast(targ, tf.int32)
-    targ = tf.reshape(targ, shape=(-1,))
     return src, targ
 
-train_ds = tf.data.Dataset.from_tensor_slices((tokenized_src_train, tokenized_targ_train))
+train_ds = tf.data.Dataset.from_tensor_slices((src_train, targ_train))
+train_ds = train_ds.batch(BATCH_SIZE, num_parallel_calls=AUTOTUNE, drop_remainder=True)
 train_ds = train_ds.map(preprocess,
-                        num_parallel_calls=AUTOTUNE)
+                       num_parallel_calls=AUTOTUNE)
 train_ds = train_ds.cache()
-train_ds = train_ds.shuffle(BUFFER_SIZE)
-train_ds = train_ds.padded_batch(BATCH_SIZE, 
-                                 drop_remainder=True, 
-                                 padding_values=(en_tokenizer.pad_token_id, fa_tokenizer.pad_token_id))
 train_ds = train_ds.shuffle(STEPS_PER_EPOCH)
 train_ds = train_ds.prefetch(AUTOTUNE)
 
-test_ds = tf.data.Dataset.from_tensor_slices((tokenized_src_val, tokenized_targ_val))
+test_ds = tf.data.Dataset.from_tensor_slices((src_val, targ_val))
+test_ds = test_ds.batch(BATCH_SIZE, num_parallel_calls=AUTOTUNE, drop_remainder=True)
 test_ds = test_ds.map(preprocess, num_parallel_calls=AUTOTUNE)
 test_ds = test_ds.cache()
-test_ds = test_ds.padded_batch(BATCH_SIZE, 
-                               drop_remainder=True, 
-                               padding_values=(en_tokenizer.pad_token_id, fa_tokenizer.pad_token_id))
 test_ds = test_ds.prefetch(AUTOTUNE)
 
 print('Loading cache...')
