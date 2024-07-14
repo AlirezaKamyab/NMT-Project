@@ -15,6 +15,7 @@ To address this issue we can return a vector at each time step. In this case we 
 Attention mechanism gives weight to each encoded time-step as to which part is should attend to more. The result of this is a weighted average of the encoder's output.
 
 Attention is calculated via computing the similarity. Attention for the *RNN with Attention* part of the project uses **additive compatibility function** also known as **additive attention** and is calculated as such:
+
 $$
 \begin{equation}
     a(s_{i-1}, h_j) = v_a^\top tanh(W_a s_{i-1} + U_ah_j)
@@ -32,6 +33,7 @@ $$
 \end{equation}
 $$
 where $c_i$ is context at time-step $i$ and $T_x$ is length of the encoder's sequence.
+
 $$
 \begin{align}
     \alpha_{ij} &= \frac{exp(e_{ij})}{\sum_{k=1}^{T_x}exp(e_{ik})}\\
@@ -45,6 +47,7 @@ We can show that, how much attention the decoder is giving to each sequence of t
 Although we have solve the issue with Encoder-Decoder models with attention, we cannot benefit much from parallelism since RNN units are sequential.
 
 Here is how GRU is calculated:
+
 $$
 \begin{align}
     \tilde{h}_t &= tanh(W_c x_t +U_c[h_{t-1} \odot r_t] + b_c)\\
