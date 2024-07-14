@@ -8,3 +8,4 @@
 !/data_cleaner/clean/*.ipynb
 /Checkpoints
 /.ipynb_checkpoints
+/data_cleaner/SubtitleCleaner

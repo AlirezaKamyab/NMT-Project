@@ -11,17 +11,8 @@ MAX_THREADS = 5
 
 
 def main():
-    try:
-        translator = GoogleTranslator(source='en', target='fa')
-    except:
-        translator = None
-
     filename = input('filename >> ')
     sep = input('SEP >> ')
-
-    if translator is None:
-        print('Could not load the translator !!!')
-        return
 
     new_filename = input('Filename to save to >> ')
     rest_filename = input('Save the undone (blank to use the original file) >> ')
@@ -47,7 +38,7 @@ def main():
     batches_done = []
     checkpoint = 0
     cnt = 0
-    for en_batch, fa_batch, batch_id in batch_executor(total_batches, translator):
+    for en_batch, fa_batch, batch_id in batch_executor(total_batches):
         print(f'\rBatch {cnt + 1:>6} out of {batch_count:>6}', end='')
         for i in range(len(en_batch)):
             en, fa = en_batch[i], fa_batch[i]
@@ -66,20 +57,20 @@ def main():
     return
 
 
-def translate_batch(batch, translator, batch_id=0):
+def translate_batch(batch, batch_id=0):
     try:
-        google = translator.translate_batch(batch, timeout=BATCH_SIZE * 5)
+        translator = GoogleTranslator(source='en', target='fa')
+        google = translator.translate_batch(batch)
         return batch, google, batch_id
     except:
         print('\nEstablishing connection . . .')
         return batch, None, batch_id
 
 
-def batch_executor(batches, translator):
+def batch_executor(batches):
     with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
         futures = [executor.submit(translate_batch,
                                    batch=batches[i],
-                                   translator=translator,
                                    batch_id=i)
                    for i in range(len(batches))]
 
@@ -88,7 +79,6 @@ def batch_executor(batches, translator):
             if result[1] is None:
                 futures.append(executor.submit(translate_batch,
                                                batch=result[0],
-                                               translator=translator,
                                                batch_id=result[2]))
                 print(f'Batch id {result[2]} has been postponed')
             else:
@@ -106,7 +96,7 @@ def save(new_filename, rest_filename, taken, total_batches, batches_done):
             return
         with open(rest_filename, 'w') as file:
             for batch_id in range(len(total_batches)):
-                if batch_id not in batches_done: continue
+                if batch_id in batches_done: continue
                 for data in total_batches[batch_id]:
                     file.write(data + '\n')
 
