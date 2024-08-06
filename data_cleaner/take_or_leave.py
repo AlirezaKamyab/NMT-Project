@@ -43,7 +43,7 @@ def main():
             if en is None or fa is None: continue
             if len(en.strip()) < 3: continue
             taken.append(sep.join([en, fa]))
-            batches_done.append(batch_id)
+        batches_done.append(batch_id)
 
         if cnt >= checkpoint:
             save(new_filename, rest_filename, taken, total_batches, batches_done)
@@ -90,14 +90,13 @@ def save(new_filename, rest_filename, taken, total_batches, batches_done):
     with open(new_filename, 'w') as file:
         file.write('\n'.join(taken))
 
-    if len(batches_done) < len(total_batches):
-        if rest_filename.strip() == '':
-            return
-        with open(rest_filename, 'w') as file:
-            for batch in total_batches:
-                if batch['id'] in batches_done: continue
-                for data in batch['batch']:
-                    file.write(data + '\n')
+    if rest_filename.strip() == '':
+        return
+    with open(rest_filename, 'w') as file:
+        for batch in total_batches:
+            if batch['id'] in batches_done: continue
+            file.write('\n'.join(batch['batch']))
+            file.write('\n')
 
 
 def thread_sleep(seconds):
