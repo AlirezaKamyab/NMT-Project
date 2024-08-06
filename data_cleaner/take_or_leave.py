@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import time
+import math
 
 from deep_translator import GoogleTranslator
 from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError
@@ -24,16 +25,13 @@ def main():
         texts = file.read().split('\n')
 
     total_batches = []
+    batch_count = len(texts) // BATCH_SIZE + math.ceil((len(texts) % BATCH_SIZE) / BATCH_SIZE)
     i = 0
-    for batch in range(len(texts) // BATCH_SIZE):
-        batch_list = []
-        while len(batch_list) != BATCH_SIZE:
-            batch_list.append(texts[i].split(sep=sep)[0])
-            i += 1
-        total_batches.append(batch_list)
+    for batch in range(batch_count):
+        batch_text = texts[batch * BATCH_SIZE:min((batch + 1) * BATCH_SIZE, len(texts))]
+        total_batches.append({'id':batch, 'batch':batch_text})
 
     batch_count = len(total_batches)
-
     taken = []
     batches_done = []
     checkpoint = 0
@@ -42,6 +40,7 @@ def main():
         print(f'\rBatch {cnt + 1:>6} out of {batch_count:>6}', end='')
         for i in range(len(en_batch)):
             en, fa = en_batch[i], fa_batch[i]
+            if en is None or fa is None: continue
             if len(en.strip()) < 3: continue
             taken.append(sep.join([en, fa]))
             batches_done.append(batch_id)
@@ -70,9 +69,9 @@ def translate_batch(batch, batch_id=0):
 def batch_executor(batches):
     with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
         futures = [executor.submit(translate_batch,
-                                   batch=batches[i],
-                                   batch_id=i)
-                   for i in range(len(batches))]
+                                   batch=batch['batch'],
+                                   batch_id=batch['id'])
+                   for batch in batches]
 
         for future in as_completed(futures):
             result = future.result()
@@ -95,9 +94,9 @@ def save(new_filename, rest_filename, taken, total_batches, batches_done):
         if rest_filename.strip() == '':
             return
         with open(rest_filename, 'w') as file:
-            for batch_id in range(len(total_batches)):
-                if batch_id in batches_done: continue
-                for data in total_batches[batch_id]:
+            for batch in total_batches:
+                if batch['id'] in batches_done: continue
+                for data in batch['batch']:
                     file.write(data + '\n')
 
 
