@@ -1,7 +1,7 @@
-/models
+/saved_models
 /temp
 /data_cleaner/cleaned
-/Data
+/data
 /data_cleaner/temp
 /data_cleaner/*.txt
 /data_cleaner/clean
@@ -9,3 +9,5 @@
 /Checkpoints
 /.ipynb_checkpoints
 /data_cleaner/SubtitleCleaner
+/data_cleaner/WMT19
+/data_cleaner/Idioms
