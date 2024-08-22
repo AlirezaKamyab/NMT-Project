@@ -1,6 +1,6 @@
 {
     "files": {
-        "dataset": "./data/clean_cleaned_en_fa.txt",
+        "dataset": "./data/temp/clean_cleaned_en_fa.txt",
         "english_tokenizer": "./data/EnglishBPETokenizer/tokenizer.json",
         "persian_tokenizer": "./data/PersianBPETokenizer/tokenizer.json"
     },

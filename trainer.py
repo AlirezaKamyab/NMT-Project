@@ -50,21 +50,19 @@ def main():
     en_pad_id = en_tokenizer.padding['pad_id']
     fa_pad_id = fa_tokenizer.padding['pad_id']
 
-    (en_tokenized_train, fa_tokenized_train), (en_tokenized_test, fa_tokenized_test) = load_data(dataset_path, 
-                                                                                                return_tokenized=True, 
-                                                                                                en_tokenizer=en_tokenizer, 
-                                                                                                fa_tokenizer=fa_tokenizer)
+    (en_train, fa_train), (en_test, fa_test) = load_data(dataset_path, 
+                                                         return_tokenized=False)
 
-    trainloader, testloader = get_pipelines(en_tokenized_train, 
-                                            fa_tokenized_train,
-                                            en_tokenized_test,
-                                            fa_tokenized_test, 
+    trainloader, testloader = get_pipelines(en_train, 
+                                            fa_train,
+                                            en_test,
+                                            fa_test,
+                                            english_tokenizer=en_tokenizer,
+                                            persian_tokenizer=fa_tokenizer, 
                                             batch_size=batch_size, 
                                             num_workers=num_workers, 
                                             prefetch_factor=prefetch_factor, 
-                                            pin_memory=pin_memory,
-                                            en_pad_id=en_pad_id, 
-                                            fa_pad_id=fa_pad_id)
+                                            pin_memory=pin_memory)
 
 
     source_vocab_size = en_tokenizer.get_vocab_size()
