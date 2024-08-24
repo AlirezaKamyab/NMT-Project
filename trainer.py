@@ -79,10 +79,9 @@ def main():
                             target_padding_idx=fa_pad_id)
     transformer = transformer.to(device)
 
-
     optimizer = Adam(params=transformer.parameters(), betas=[beta1, beta2], eps=epsilon)
     loss_func = torch.nn.CrossEntropyLoss(label_smoothing=label_smoothing, reduction='none')
-    criterion = get_criterion(loss_func=loss_func, target_vocab_size=target_vocab_size)
+    criterion = get_criterion(loss_func=loss_func, target_vocab_size=target_vocab_size, mask_id=fa_pad_id)
     scheduler = get_scheduler(d_model=torch.tensor(d_model), warmup_steps=torch.tensor(warmup_steps))
 
 
@@ -137,7 +136,7 @@ def main():
                 target = target.to(device)
                 y_true = target[:, 1:]
                 target = target[:, :-1]
-        
+
                 y_hat = transformer(source, target)
                 loss = criterion(y_hat, y_true.to(dtype=torch.long))    
                 acc = masked_accuracy(y_hat, y_true, fa_pad_id)
@@ -185,11 +184,11 @@ def get_scheduler(d_model, warmup_steps=4000):
     return get_learning_rate
 
 
-def get_criterion(loss_func, target_vocab_size):
+def get_criterion(loss_func, target_vocab_size, mask_id):
     def criterion(y_hat, y_true):
         y_hat = torch.reshape(y_hat, [-1, target_vocab_size])
         y_true = torch.reshape(y_true, [-1])
-        mask = torch.logical_not(y_true == 0)
+        mask = torch.logical_not(y_true == mask_id)
         mask = mask.to(dtype=torch.float32)
         loss = loss_func(y_hat, y_true) * mask
         return torch.sum(loss) / torch.sum(mask)

@@ -14,7 +14,7 @@
     "model": {
         "d_model":128,
         "num_heads":8,
-        "N":6,
+        "N":4,
         "dff":512,
         "dropout_rate":0.1,
         "label_smoothing":0.1
@@ -23,7 +23,7 @@
         "beta1":0.9,
         "beta2":0.98,
         "epsilon":1e-9,
-        "warmup_steps":20000,
-        "epochs":20
+        "warmup_steps":3000,
+        "epochs":30
     }
 }
