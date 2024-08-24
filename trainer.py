@@ -7,6 +7,7 @@ from tokenizers import Tokenizer
 from torch.utils.tensorboard import SummaryWriter
 from data.dataloader import load_data, get_pipelines
 from models.transformer.transformer import Transformer
+from models.relativeTransformer.transformer import Transformer as RelTransformer
 from torch.optim import Adam
 import json
 
@@ -31,8 +32,11 @@ def main():
     pin_memory = config['pipeline']['pin_memory']
     seed = config['pipeline']['seed']
 
+    self_attention = config['model']['self_attention']
     d_model = config['model']['d_model']
     num_heads = config['model']['num_heads']
+    if self_attention == 'relative':
+        k = config['model']['k']
     N = config['model']['N']
     dff = config['model']['dff']
     dropout_rate = config['model']['dropout_rate']
@@ -68,15 +72,28 @@ def main():
     source_vocab_size = en_tokenizer.get_vocab_size()
     target_vocab_size = fa_tokenizer.get_vocab_size()
 
-    transformer = Transformer(d_model=d_model, 
-                            num_heads=num_heads, 
-                            N=N, 
-                            dff=dff, 
-                            dropout=dropout_rate,
-                            source_vocab_size=source_vocab_size, 
-                            target_vocab_size=target_vocab_size, 
-                            source_padding_idx=en_pad_id, 
-                            target_padding_idx=fa_pad_id)
+    if self_attention == 'absolute':
+        transformer = Transformer(d_model=d_model, 
+                                num_heads=num_heads, 
+                                N=N, 
+                                dff=dff, 
+                                dropout=dropout_rate,
+                                source_vocab_size=source_vocab_size, 
+                                target_vocab_size=target_vocab_size, 
+                                source_padding_idx=en_pad_id, 
+                                target_padding_idx=fa_pad_id)
+    elif self_attention == 'relative':
+        transformer = RelTransformer(d_model=d_model, 
+                                     num_heads=num_heads, 
+                                     k=k, 
+                                     N=N, 
+                                     dff=dff, 
+                                     dropout=dropout_rate,
+                                     source_vocab_size=source_vocab_size, 
+                                     target_vocab_size=target_vocab_size, 
+                                     source_padding_idx=en_pad_id, 
+                                     target_padding_idx=fa_pad_id)
+
     transformer = transformer.to(device)
 
     optimizer = Adam(params=transformer.parameters(), betas=[beta1, beta2], eps=epsilon)
