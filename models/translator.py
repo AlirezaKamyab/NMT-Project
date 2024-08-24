@@ -10,6 +10,7 @@ class GreedyTranslator(torch.nn.Module):
         self.classifier = transformer.classifier
         self.en_tokenizer = en_tokenizer
         self.fa_tokenizer = fa_tokenizer
+        self.en_pad = en_tokenizer.token_to_id('[PAD]')
         self.cls = fa_tokenizer.token_to_id('[CLS]')
         self.sep = fa_tokenizer.token_to_id('[SEP]')
         self.pad = fa_tokenizer.token_to_id('[PAD]')
@@ -19,19 +20,20 @@ class GreedyTranslator(torch.nn.Module):
     def forward(self, source:list):
         device = next(self.parameters()).device
         source = torch.tensor([x.ids for x in self.en_tokenizer.encode_batch(source)], dtype=torch.int32, device=device)
+        mask = source == self.en_pad
         target = torch.tensor([[self.cls]] * source.shape[0], dtype=torch.int32, device=device)
         pending = torch.tensor([1] * source.shape[0], dtype=torch.int32, device=device)
         
         with torch.no_grad():
-            context = self.encoder(source)
+            context = self.encoder(source, mask=mask)
 
             for _ in range(self.max_length):
-                outputs = self.decoder(target, context)
+                outputs = self.decoder(target, context, mask=mask)
                 outputs = self.classifier(outputs)
                 outputs = torch.argmax(outputs, dim=-1)[:, -1]
-                outputs = outputs.unsqueeze(dim=1) * pending + (1 - pending) * self.pad
-                pending = torch.logical_not(torch.eq(outputs[:, 0], self.sep)).to(dtype=torch.int32) * pending
-                target = torch.concat([target, outputs], dim=-1)
+                outputs = outputs * pending + (1 - pending) * self.pad
+                pending = torch.logical_not(torch.eq(outputs, self.sep)).to(dtype=torch.int32) * pending
+                target = torch.concat([target, outputs.unsqueeze(1)], dim=-1)
 
                 if torch.sum(pending) == 0:
                     break
