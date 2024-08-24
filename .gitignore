@@ -14,3 +14,4 @@ data_cleaner/clean
 /data_cleaner/SubtitleCleaner
 /data_cleaner/WMT19
 /data_cleaner/Idioms
+**/__pycache__/
