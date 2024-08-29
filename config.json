@@ -12,8 +12,10 @@
         "seed": 123
     },
     "model": {
+        "self_attention":"absolute",
         "d_model":128,
         "num_heads":8,
+        "k":8,
         "N":4,
         "dff":512,
         "dropout_rate":0.1,
