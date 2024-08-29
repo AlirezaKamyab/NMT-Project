@@ -18,6 +18,7 @@ class GreedyTranslator(torch.nn.Module):
 
 
     def forward(self, source:list):
+        source = [x.lower() for x in source]
         device = next(self.parameters()).device
         source = torch.tensor([x.ids for x in self.en_tokenizer.encode_batch(source)], dtype=torch.int32, device=device)
         mask = source == self.en_pad
