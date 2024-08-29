@@ -3,8 +3,8 @@
 /data_cleaner/cleaned
 data/*
 !data/*.py
-!data/EnglishBPETokenizer/**
-!data/PersianBPETokenizer/**
+!data/EnglishBPETokenizer/
+!data/PersianBPETokenizer/
 data_cleaner/temp
 data_cleaner/*.txt
 data_cleaner/clean
