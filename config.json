@@ -1,0 +1,31 @@
+{
+    "files": {
+        "dataset": "./data/temp/clean_cleaned_en_fa.txt",
+        "english_tokenizer": "./data/EnglishBPETokenizer/tokenizer.json",
+        "persian_tokenizer": "./data/PersianBPETokenizer/tokenizer.json"
+    },
+    "pipeline": {
+        "batch_size": 128,
+        "num_workers": 4,
+        "prefetch_factor": 2,
+        "pin_memory": true,
+        "seed": 123
+    },
+    "model": {
+        "self_attention":"absolute",
+        "d_model":128,
+        "num_heads":8,
+        "k":8,
+        "N":4,
+        "dff":512,
+        "dropout_rate":0.1,
+        "label_smoothing":0.1
+    },
+    "optimizer": {
+        "beta1":0.9,
+        "beta2":0.98,
+        "epsilon":1e-9,
+        "warmup_steps":3000,
+        "epochs":30
+    }
+}
