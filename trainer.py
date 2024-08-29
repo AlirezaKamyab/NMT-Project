@@ -65,7 +65,7 @@ def main():
                                             persian_tokenizer=fa_tokenizer, 
                                             batch_size=batch_size, 
                                             num_workers=num_workers, 
-                                            prefetch_factor=prefetch_factor, 
+                                            prefetch_factor=prefetch_factor if prefetch_factor is not None else None, 
                                             pin_memory=pin_memory)
 
 
