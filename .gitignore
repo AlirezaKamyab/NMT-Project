@@ -15,3 +15,7 @@ data_cleaner/clean
 /data_cleaner/WMT19
 /data_cleaner/Idioms
 **/__pycache__/
+Evaluation/
+**.ipynb
+inference.py
+Tensorflow_implementation
